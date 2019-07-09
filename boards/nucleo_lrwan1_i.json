@@ -1,13 +1,17 @@
 {
   "build": {
     "cpu": "cortex-m0plus",
-    "extra_flags": "-DSTM32L053xx",
+    "core": "stm32l0",
+    "extra_flags": "-DSTM32L052xx -DARDUINO_STM32L0_NUCLEO",
     "f_cpu": "32000000L",
-    "framework_extra_flags": {
-      "arduino": "-D__CORTEX_SC=0"
-    },
-    "mcu": "stm32l053r8t6",
-    "variant": "NUCLEO_L053R8"
+    "hwids": [
+      [
+        "0x0483",
+        "0xdf11"
+      ]
+    ],
+    "mcu": "stm32l052t8y6",
+    "variant": "I-NUCLEO-LRWAN1"
   },
   "debug": {
     "default_tools": [
@@ -22,21 +26,19 @@
   },
   "frameworks": [
     "arduino",
-    "mbed",
     "stm32cube"
   ],
-  "name": "ST Nucleo L053R8",
+  "name": "I-NUCLEO-LRWAN1 Expansion Board",
   "upload": {
     "maximum_ram_size": 8192,
     "maximum_size": 65536,
-    "protocol": "stlink",
+    "protocol": "dfu",
     "protocols": [
       "jlink",
       "stlink",
-      "blackmagic",
-      "mbed"
+      "blackmagic"
     ]
   },
-  "url": "https://developer.mbed.org/platforms/ST-Nucleo-L053R8/",
+  "url": "https://www.st.com/en/evaluation-tools/i-nucleo-lrwan1.html",
   "vendor": "ST"
 }
