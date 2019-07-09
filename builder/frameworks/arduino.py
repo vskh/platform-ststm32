@@ -43,6 +43,11 @@ if core == "maple":
             "Error: %s family is not supported by maple core\n" % mcu[0:7])
         env.Exit(1)
 
+elif core == "stm32l0":
+    SConscript(
+        join(env.PioPlatform().get_package_dir(
+            "framework-arduinoststm32l0"),
+            "tools", "platformio-build.py"))
 else:
     SConscript(
         join(env.PioPlatform().get_package_dir(

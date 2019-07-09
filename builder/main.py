@@ -175,26 +175,41 @@ elif upload_protocol in ("serial", "dfu"):
     _upload_tool = "serial_upload"
     _upload_flags = ["{upload.altID}", "{upload.usbID}"]
     if upload_protocol == "dfu":
-        _upload_tool = "maple_upload"
-        _usbids = board.get("build.hwids")
-        _upload_flags = [
-            board.get("upload.boot_version", 2),
-            "%s:%s" % (_usbids[0][0][2:], _usbids[0][1][2:])
-        ]
+        if env.BoardConfig().get("build.core") == "stm32l0":
+            vid = env.BoardConfig().get("build.hwids")[0][0]
+            pid = env.BoardConfig().get("build.hwids")[0][1]
+            env.Replace(
+                UPLOADER="dfu-util",
+                UPLOADERFLAGS=[
+                    "-d", "vid:pid,%s:%s" % (vid, pid),
+                    "-a", "0", "-s", "0x08000000:leave", "-D"
+                ],
+                UPLOADCMD='$UPLOADER $UPLOADERFLAGS "$SOURCES"')
+        else:
+            _upload_tool = "maple_upload"
+            _usbids = board.get("build.hwids")
+            _upload_flags = [
+                board.get("upload.boot_version", 2),
+                "%s:%s" % (_usbids[0][0][2:], _usbids[0][1][2:])
+            ]
 
-    def __configure_upload_port(env):
-        return basename(env.subst("$UPLOAD_PORT"))
+            def __configure_upload_port(env):
+                return basename(env.subst("$UPLOAD_PORT"))
 
-    env.Replace(
-        __configure_upload_port=__configure_upload_port,
-        UPLOADER=_upload_tool,
-        UPLOADERFLAGS=["${__configure_upload_port(__env__)}"] + _upload_flags,
-        UPLOADCMD='$UPLOADER $UPLOADERFLAGS "$PROJECT_DIR/$SOURCES"'
-    )
-    upload_actions = [
-        env.VerboseAction(env.AutodetectUploadPort, "Looking for upload port..."),
-        env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")
-    ]
+            env.Replace(
+                __configure_upload_port=__configure_upload_port,
+                UPLOADER=_upload_tool,
+                UPLOADERFLAGS=["${__configure_upload_port(__env__)}"] + _upload_flags,
+                UPLOADCMD='$UPLOADER $UPLOADERFLAGS "$PROJECT_DIR/$SOURCES"'
+            )
+
+    upload_actions = []
+    if env.BoardConfig().get("build.core") != "stm32l0":
+        upload_actions.append(
+            env.VerboseAction(
+                env.AutodetectUploadPort, "Looking for upload port..."))
+
+    upload_actions.append(env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE"))
 
 elif upload_protocol in debug_tools:
     openocd_args = [

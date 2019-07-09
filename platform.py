@@ -29,6 +29,11 @@ class Ststm32Platform(PlatformBase):
             self.frameworks['arduino']['package'] = "framework-arduinoststm32-maple"
             self.packages["framework-arduinoststm32-maple"]["optional"] = False
             self.packages["framework-arduinoststm32"]["optional"] = True
+        if "arduino" in variables.get("pioframework", []) and build_core == "stm32l0":
+            self.frameworks['arduino']['package'] = "framework-arduinoststm32l0"
+            self.packages["framework-arduinoststm32l0"]["optional"] = False
+            self.packages["framework-arduinoststm32"]["optional"] = True
+            self.packages["tool-dfuutil"]["optional"] = False
 
         if board == "mxchip_az3166":
             self.frameworks['arduino'][
@@ -113,7 +118,7 @@ class Ststm32Platform(PlatformBase):
                     server_args.extend([
                         "-f", "interface/%s.cfg" % link,
                         "-c", "transport select %s" % (
-                            "hla_swd" if link == "stlink" else "swd"),
+                            "hla_swd"if link == "stlink" else "swd"),
                         "-f", "target/%s.cfg" % debug.get("openocd_target")
                     ])
                     server_args.extend(debug.get("openocd_extra_args", []))

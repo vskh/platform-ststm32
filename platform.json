@@ -78,6 +78,11 @@
       "optional": true,
       "version": "~1.10000.190516"
     },
+    "framework-arduinoststm32l0": {
+      "type": "framework",
+      "optional": true,
+      "version": "1.10.190709"
+    },
     "framework-arduinostm32mxchip": {
       "type": "framework",
       "optional": true,
@@ -102,6 +107,11 @@
       "type": "uploader",
       "optional": true,
       "version": "^1.63208.0"
+    },
+    "tool-dfuutil": {
+      "type": "uploader",
+      "optional": true,
+      "version": "^1.9.0"
     }
   }
 }
