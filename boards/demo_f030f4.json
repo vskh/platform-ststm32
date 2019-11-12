@@ -4,7 +4,10 @@
     "extra_flags": "-DSTM32F030x6",
     "f_cpu": "48000000L",
     "mcu": "stm32f030f4p6",
-    "variant": "DEMO_F030F4"
+    "variant": "DEMO_F030F4",
+    "zephyr": {
+       "variant": "stm32f030_demo"
+    }
   },
   "debug": {
     "jlink_device": "STM32F030F4",
@@ -13,7 +16,8 @@
   },
   "frameworks": [
     "arduino",
-    "stm32cube"
+    "stm32cube",
+    "zephyr"
   ],
   "name": "Demo F030F4",
   "upload": {

@@ -6,7 +6,10 @@
     "f_cpu": "32000000L",
     "ldscript": "stm32l15xx6.ld",
     "mcu": "stm32l152rbt6",
-    "variant": "stm32l152xb"
+    "variant": "stm32l152xb",
+    "zephyr": {
+       "variant": "stm32l1_disco"
+    }
   },
   "debug": {
     "default_tools": [
@@ -23,7 +26,8 @@
     "cmsis",
     "spl",
     "libopencm3",
-    "stm32cube"
+    "stm32cube",
+    "zephyr"
   ],
   "name": "ST STM32LDISCOVERY",
   "upload": {
