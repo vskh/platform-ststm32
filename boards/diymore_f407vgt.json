@@ -8,6 +8,7 @@
       "arduino": "-DARDUINO_DIYMORE_F407VGT"
     },
     "mcu": "stm32f407vgt6",
+    "product_line": "STM32F407xx",
     "variant": "DIYMORE_F407VGT"
   },
   "debug": {
@@ -18,7 +19,8 @@
   "frameworks": [
     "arduino",
     "cmsis",
-    "stm32cube"
+    "stm32cube",
+    "libopencm3"
   ],
   "name": "F407VG",
   "upload": {

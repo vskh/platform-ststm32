@@ -1,10 +1,12 @@
 {
   "build": {
-    "core": "maple",
+    "core": "stm32",
     "cpu": "cortex-m4",
     "extra_flags": "-DSTM32F4 -DSTM32F405xx",
     "f_cpu": "168000000L",
     "mcu": "stm32f405rgt6",
+    "product_line": "STM32F405xx",
+    "variant": "Generic_F4x5RG",
     "zephyr": {
        "variant": "olimex_stm32_p405"
     }
@@ -15,7 +17,10 @@
     "svd_path": "STM32F40x.svd"
   },
   "frameworks": [
+    "arduino",
+    "cmsis",
     "stm32cube",
+    "libopencm3",
     "zephyr"
   ],
   "name": "Olimex STM32-P405",

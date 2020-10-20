@@ -4,11 +4,9 @@
     "cpu": "cortex-m3",
     "extra_flags": "-DSTM32F103xB",
     "f_cpu": "72000000L",
-    "libopencm3": {
-      "ldscript": "stm32f103xb.ld"
-    },
     "mcu": "stm32f103rbt6",
     "variant": "NUCLEO_F103RB",
+    "product_line": "STM32F103xB",
     "zephyr": {
        "variant": "olimexino_stm32"
     }
@@ -20,6 +18,7 @@
   },
   "frameworks": [
     "arduino",
+    "cmsis",
     "mbed",
     "libopencm3",
     "stm32cube",
