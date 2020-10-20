@@ -8,6 +8,7 @@
       "arduino": "-DARDUINO_BLACK_F407ZG"
     },
     "mcu": "stm32f407zgt6",
+    "product_line": "STM32F407xx",
     "variant": "BLACK_F407XX",
     "zephyr": {
        "variant": "olimex_stm32_h407"
@@ -25,6 +26,7 @@
     "arduino",
     "cmsis",
     "stm32cube",
+    "libopencm3",
     "zephyr"
   ],
   "name": "STM32-H407",
