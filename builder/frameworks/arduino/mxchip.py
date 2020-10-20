@@ -18,11 +18,12 @@ Arduino Wiring-based Framework allows writing cross-platform software to
 control devices attached to a wide range of Arduino boards to create all
 kinds of creative coding, interactive objects, spaces or physical experiences.
 
-https://github.com/microsoft/devkit-sdk
+http://www.stm32duino.com
 """
 
 from os import walk
 from os.path import isdir, join
+from typing import Dict, AnyStr, Any
 
 from SCons.Script import DefaultEnvironment
 
@@ -30,161 +31,81 @@ env = DefaultEnvironment()
 platform = env.PioPlatform()
 board = env.BoardConfig()
 
-env.SConscript("../_bare.py")
-
 FRAMEWORK_DIR = platform.get_package_dir("framework-arduinostm32mxchip")
 FRAMEWORK_VERSION = platform.get_package_version(
     "framework-arduinostm32mxchip")
 assert isdir(FRAMEWORK_DIR)
 
-env.Append(
-    CFLAGS=["-std=gnu99"],
+env.SConscript("../_bare.py")
 
-    CCFLAGS=[
-        "-w",
-        "--param", "max-inline-insns-single=500",
-        "-mfloat-abi=softfp",
-        "-mfpu=fpv4-sp-d16",
-        "-include", "mbed_config.h",
-        "-nostdlib"
-    ],
-
-    CXXFLAGS=[
-        "-std=gnu++11",
-        "-fno-threadsafe-statics",
-        "-fmessage-length=0",
-        "-Wno-missing-field-initializers",
-        "-Wno-unused-parameter",
-        "-Wvla"
-    ],
-
-    CPPDEFINES=[
-        ("ARDUINO", 10802),
-        ("__MBED__", 1),
-        ("DEVICE_I2CSLAVE", 1),
-        "TARGET_LIKE_MBED",
-        ("DEVICE_PORTOUT", 1),
-        ("DEVICE_PORTINOUT", 1),
-        "TARGET_RTOS_M4_M7",
-        ("DEVICE_LOWPOWERTIMER", 1),
-        ("DEVICE_RTC", 1),
-        "TOOLCHAIN_object",
-        ("DEVICE_SERIAL_ASYNCH", 1),
-        "TARGET_STM32F4",
-        "__CMSIS_RTOS",
-        "TOOLCHAIN_GCC",
-        ("DEVICE_CAN", 1),
-        "TARGET_CORTEX_M",
-        "TARGET_DEBUG",
-        ("DEVICE_I2C_ASYNCH", 1),
-        "TARGET_LIKE_CORTEX_M4",
-        "TARGET_M4",
-        "TARGET_UVISOR_UNSUPPORTED",
-        ("DEVICE_QSPI", 1),
-        ("DEVICE_SPI_ASYNCH", 1),
-        ("MBED_BUILD_TIMESTAMP", "1490085708.63"),
-        ("DEVICE_PWMOUT", 1),
-        ("DEVICE_INTERRUPTIN", 1),
-        ("DEVICE_I2C", 1),
-        ("TRANSACTION_QUEUE_SIZE_SPI", 2),
-        "__CORTEX_M4",
-        ("HSE_VALUE", '\"((uint32_t)26000000)\"'),
-        "TARGET_FF_MORPHO",
-        ("__FPU_PRESENT", 1),
-        "TARGET_FF_ARDUINO",
-        ("DEVICE_PORTIN", 1),
-        "TARGET_STM",
-        ("DEVICE_SERIAL_FC", 1),
-        ("DEVICE_SDIO", 1),
-        ("DEVICE_TRNG", 1),
-        "__MBED_CMSIS_RTOS_CM",
-        ("DEVICE_SLEEP", 1),
-        "TOOLCHAIN_GCC_ARM",
-        "TARGET_MXCHIP",
-        ("DEVICE_SPI", 1),
-        "USB_STM_HAL",
-        "MXCHIP_LIBRARY",
-        ("DEVICE_SPISLAVE", 1),
-        ("DEVICE_ANALOGIN", 1),
-        ("DEVICE_SERIAL", 1),
-        ("DEVICE_ERROR_RED", 1),
-        "TARGET_AZ3166",
-        "ARM_MATH_CM4",
-        ("LPS22HB_I2C_PORT", "MICO_I2C_1"),
-        ("DEVICE_STDIO_MESSAGES", 1)
-    ],
-
-    LIBPATH=[
-        join(FRAMEWORK_DIR, "system"),
-        join(FRAMEWORK_DIR, "system", "az3166-driver"),
-        join(FRAMEWORK_DIR, "system", "az3166-driver", "libwlan", "TARGET_EMW1062"),
-        join(FRAMEWORK_DIR, "variants",
-             board.get("build.variant"), "linker_scripts", "gcc")
-    ],
-
-    LIBSOURCE_DIRS=[join(FRAMEWORK_DIR, "libraries")])
-
-
-inc_dirs = []
-for d in ("system", join("cores", env.BoardConfig().get("build.core"))):
-    for root, _, files in sorted(walk(join(FRAMEWORK_DIR, d))):
-        if any(f.endswith(".h") for f in files) or "inc" in root:
-            if root not in inc_dirs:
-                inc_dirs.append(root)
-
-inc_dirs.extend([
-    join(FRAMEWORK_DIR, "system"),
-    join(FRAMEWORK_DIR, "system", "mbed-os", "features"),
-    join(FRAMEWORK_DIR, "system", "mbed-os", "features", "mbedtls"),
-    join(FRAMEWORK_DIR, "system", "az3166-driver", "mico", "platform")
-])
-
-env.Append(CPPPATH=inc_dirs)
-
-env.Replace(
-    LINKFLAGS=[
-        "-mcpu=cortex-m4",
-        "-mthumb",
-        "-Wl,--check-sections",
-        "-Wl,--gc-sections",
-        "-Wl,--unresolved-symbols=report-all",
-        "-Wl,--warn-common",
-        "-Wl,--warn-section-align",
-        "-Wl,--wrap,_malloc_r",
-        "-Wl,--wrap,_free_r",
-        "-Wl,--wrap,_realloc_r",
-        "-Wl,--wrap,_calloc_r",
-        "-Wl,--start-group",
-        "--specs=nano.specs",
-        "--specs=nosys.specs",
-        "-u", "_printf_float"
-    ]
+COMPILE_OPTS = dict(
+    ASFLAGS=['-c', '-x', 'assembler-with-cpp', '-I{build_system_path}', '-I{build_system_path}/mbed-os', '-I{build_system_path}/mbed-os/cmsis', '-I{build_system_path}/mbed-os/drivers', '-I{build_system_path}/mbed-os/events', '-I{build_system_path}/mbed-os/events/equeue', '-I{build_system_path}/mbed-os/features', '-I{build_system_path}/mbed-os/features/filesystem', '-I{build_system_path}/mbed-os/features/filesystem/bd', '-I{build_system_path}/mbed-os/features/filesystem/fat', '-I{build_system_path}/mbed-os/features/filesystem/fat/ChaN', '-I{build_system_path}/mbed-os/features/frameworks/greentea-client/greentea-client', '-I{build_system_path}/mbed-os/features/frameworks/unity/unity', '-I{build_system_path}/mbed-os/features/mbedtls/inc', '-I{build_system_path}/mbed-os/features/mbedtls', '-I{build_system_path}/mbed-os/features/netsocket', '-I{build_system_path}/mbed-os/hal', '-I{build_system_path}/mbed-os/hal/storage_abstraction', '-I{build_system_path}/mbed-os/platform', '-I{build_system_path}/mbed-os/rtos', '-I{build_system_path}/mbed-os/rtos/rtx/TARGET_CORTEX_M', '-I{build_system_path}/mbed-os/targets/TARGET_MXCHIP', '-I{build_system_path}/mbed-os/targets/TARGET_MXCHIP/TARGET_AZ3166', '-I{build_system_path}/mbed-os/targets/TARGET_MXCHIP/TARGET_AZ3166/device', '-I{build_system_path}/mbed-os/targets/TARGET_STM', '-I{build_system_path}/mbed-os/targets/TARGET_STM/TARGET_STM32F4', '-I{build_system_path}/mbed-os/targets/TARGET_STM/TARGET_STM32F4/device', '-I{build_system_path}/az3166-driver', '-I{build_system_path}/az3166-driver/libraries/drivers/display/VGM128064', '-I{build_system_path}/az3166-driver/libraries/drivers/gpio_btn', '-I{build_system_path}/az3166-driver/libraries/drivers/spi_flash', '-I{build_system_path}/az3166-driver/libraries/utilities', '-I{build_system_path}/az3166-driver/mico', '-I{build_system_path}/az3166-driver/mico/include', '-I{build_system_path}/az3166-driver/mico/include/mico_drivers', '-I{build_system_path}/az3166-driver/mico/net/LwIP/lwip-sys', '-I{build_system_path}/az3166-driver/mico/net/LwIP/lwip-sys/arch', '-I{build_system_path}/az3166-driver/mico/net/LwIP/lwip-ver1.4.0.rc1/src/include', '-I{build_system_path}/az3166-driver/mico/net/LwIP/lwip-ver1.4.0.rc1/src/include/lwip', '-I{build_system_path}/az3166-driver/mico/net/LwIP/lwip-ver1.4.0.rc1/src/include/ipv4', '-I{build_system_path}/az3166-driver/mico/platform', '-I{build_system_path}/az3166-driver/mico/platform/include', '-I{build_system_path}/az3166-driver/mico/platform/mbed', '-I{build_system_path}/az3166-driver/mico/rtos', '-I{build_system_path}/az3166-driver/mico/system', '-I{build_system_path}/az3166-driver/mico/system/command_console', '-I{build_system_path}/az3166-driver/TARGET_AZ3166', '-I{build_system_path}/az3166-driver/TARGET_STM/peripherals', '-I{build_system_path}/az3166-driver/utilities', '-I{build_system_path}/azure-iot-sdk-c/', '-I{build_system_path}/azure-iot-sdk-c/c-utility/inc', '-I{build_system_path}/azure-iot-sdk-c/c-utility/pal/mbed_os5', '-I{build_system_path}/azure-iot-sdk-c/deps/parson', '-I{build_system_path}/azure-iot-sdk-c/deps/uhttp/inc', '-I{build_system_path}/azure-iot-sdk-c/deps/umock-c/inc', '-I{build_system_path}/azure-iot-sdk-c/deps/azure-macro-utils-c/inc', '-I{build_system_path}/azure-iot-sdk-c/iothub_client/inc', '-I{build_system_path}/azure-iot-sdk-c/iothub_client/inc/internal', '-I{build_system_path}/azure-iot-sdk-c/digitaltwin_client/inc', '-I{build_system_path}/azure-iot-sdk-c/digitaltwin_client/inc/internal', '-I{build_system_path}/azure-iot-sdk-c/provisioning_client/inc', '-I{build_system_path}/azure-iot-sdk-c/provisioning_client/adapters', '-I{build_system_path}/azure-iot-sdk-c/provisioning_client/deps/RIoT/Reference/DICE', '-I{build_system_path}/azure-iot-sdk-c/provisioning_client/deps/RIoT/Reference/RIoT', '-I{build_system_path}/azure-iot-sdk-c/provisioning_client/deps/RIoT/Reference/RIoT/Core/', '-I{build_system_path}/azure-iot-sdk-c/provisioning_client/deps/RIoT/Reference/RIoT/Core/RIoTCrypt/include', '-I{build_system_path}/azure-iot-sdk-c/umqtt/inc', '-I{build_core_path}', '-I{build_core_path}/cli', '-I{build_core_path}/httpclient', '-I{build_core_path}/httpclient/http_parser', '-I{build_core_path}/httpserver', '-I{build_core_path}/NTPClient', '-I{build_core_path}/system', '-I{build_core_path}/Telemetry', '-DTRANSACTION_QUEUE_SIZE_SPI=2', '-D__CORTEX_M4', '-DUSB_STM_HAL', '-DARM_MATH_CM4', '-D__FPU_PRESENT=1', '-DUSBHOST_OTHER', '-D__MBED_CMSIS_RTOS_CM', '-D__CMSIS_RTOS', '-mcpu={build_mcu}', '-DARDUINO={runtime_ide_version}', '-DARDUINO_{build_board}', '-DARDUINO_ARCH_{build_arch}'],
+    CFLAGS=['-std=gnu99'],
+    CCFLAGS=['-c', '-O2', '-g', '-w', '-ffunction-sections', '-fdata-sections', '-nostdlib', '--param', 'max-inline-insns-single=500', '-include', 'mbed_config.h', '-MMD', '-mcpu={build_mcu}'],
+    CXXFLAGS=['-std=gnu++11', '-Wno-unused-parameter', '-Wno-missing-field-initializers', '-fmessage-length=0', '-fno-threadsafe-statics', '-fno-rtti', '-Wvla'],
+    CPPDEFINES=[('DEVICE_LOWPOWERTIMER', '1'), ('DEVICE_I2CSLAVE', '1'), ('HSE_VALUE', '((uint32_t)26000000)'), ('DEVICE_SERIAL_FC', '1'), ('TOOLCHAIN_object', None), ('USB_STM_HAL', None), ('DEVICE_I2C_ASYNCH', '1'), ('TARGET_FF_ARDUINO', None), ('DEVICE_CAN', '1'), ('DEVICE_SDIO', '1'), ('DEVICE_I2C', '1'), ('DEVICE_SPISLAVE', '1'), ('DEVICE_SPI', '1'), ('DEVICE_RTC', '1'), ('__CMSIS_RTOS', None), ('DEVICE_PORTOUT', '1'), ('TARGET_LIKE_MBED', None), ('DEVICE_SLEEP', '1'), ('TARGET_FF_MORPHO', None), ('MXCHIP_LIBRARY', None), ('LPS22HB_I2C_PORT', 'MICO_I2C_1'), ('TARGET_CORTEX_M', None), ('DEVICE_SERIAL_ASYNCH', '1'), ('DEVICE_INTERRUPTIN', '1'), ('TARGET_MXCHIP', None), ('DEVICE_PORTINOUT', '1'), ('TARGET_AZ3166', None), ('DEVICE_STDIO_MESSAGES', '1'), ('TARGET_STM', None), ('DEVICE_SPI_ASYNCH', '1'), ('TARGET_STM32F4', None), ('__CORTEX_M4', None), ('MBED_BUILD_TIMESTAMP', '1490085708.63'), ('TARGET_DEBUG', None), ('DEVICE_ANALOGIN', '1'), ('DEVICE_PORTIN', '1'), ('ARDUINO_ARCH_{build_arch}', None), ('DEVICE_QSPI', '1'), ('TARGET_UVISOR_UNSUPPORTED', None), ('__MBED_CMSIS_RTOS_CM', None), ('DEVICE_PWMOUT', '1'), ('ARDUINO_{build_board}', None), ('TARGET_LIKE_CORTEX_M4', None), ('DEVICE_TRNG', '1'), ('DEVICE_SERIAL', '1'), ('DEVICE_ERROR_RED', '1'), ('TOOLCHAIN_GCC_ARM', None), ('TARGET_M4', None), ('ARM_MATH_CM4', None), ('TOOLCHAIN_GCC', None), ('TRANSACTION_QUEUE_SIZE_SPI', '2'), ('__MBED__', '1'), ('TARGET_RTOS_M4_M7', None), ('ARDUINO', '{runtime_ide_version}'), ('__FPU_PRESENT', '1'), ('DEVICE_LOWPOWERTIMER', '1'), ('DEVICE_I2CSLAVE', '1'), ('HSE_VALUE', '((uint32_t)26000000)'), ('DEVICE_SERIAL_FC', '1'), ('TOOLCHAIN_object', None), ('USB_STM_HAL', None), ('DEVICE_I2C_ASYNCH', '1'), ('TARGET_FF_ARDUINO', None), ('DEVICE_CAN', '1'), ('DEVICE_SDIO', '1'), ('DEVICE_I2C', '1'), ('DEVICE_SPISLAVE', '1'), ('DEVICE_SPI', '1'), ('DEVICE_RTC', '1'), ('__CMSIS_RTOS', None), ('DEVICE_PORTOUT', '1'), ('TARGET_LIKE_MBED', None), ('DEVICE_SLEEP', '1'), ('TARGET_FF_MORPHO', None), ('MXCHIP_LIBRARY', None), ('LPS22HB_I2C_PORT', 'MICO_I2C_1'), ('TARGET_CORTEX_M', None), ('DEVICE_SERIAL_ASYNCH', '1'), ('DEVICE_INTERRUPTIN', '1'), ('TARGET_MXCHIP', None), ('DEVICE_PORTINOUT', '1'), ('TARGET_AZ3166', None), ('DEVICE_STDIO_MESSAGES', '1'), ('TARGET_STM', None), ('DEVICE_SPI_ASYNCH', '1'), ('TARGET_STM32F4', None), ('__CORTEX_M4', None), ('MBED_BUILD_TIMESTAMP', '1490085708.63'), ('TARGET_DEBUG', None), ('DEVICE_ANALOGIN', '1'), ('DEVICE_PORTIN', '1'), ('ARDUINO_ARCH_{build_arch}', None), ('DEVICE_QSPI', '1'), ('TARGET_UVISOR_UNSUPPORTED', None), ('__MBED_CMSIS_RTOS_CM', None), ('DEVICE_PWMOUT', '1'), ('ARDUINO_{build_board}', None), ('TARGET_LIKE_CORTEX_M4', None), ('DEVICE_TRNG', '1'), ('DEVICE_SERIAL', '1'), ('DEVICE_ERROR_RED', '1'), ('TOOLCHAIN_GCC_ARM', None), ('TARGET_M4', None), ('ARM_MATH_CM4', None), ('TOOLCHAIN_GCC', None), ('TRANSACTION_QUEUE_SIZE_SPI', '2'), ('__MBED__', '1'), ('TARGET_RTOS_M4_M7', None), ('ARDUINO', '{runtime_ide_version}'), ('__FPU_PRESENT', '1')],
+    LIBPATH=['{build_path}', '{build_system_path}/az3166-driver/libwlan/TARGET_EMW1062', '{build_system_path}/az3166-driver', '{build_system_path}'],
+    LIBS=['m', 'stsafe', 'devkit-sdk-core-lib', 'stdc++', 'wlan'],
+    LINKFLAGS=['-mcpu={build_mcu}', '-mthumb', '-O2', '-g', '-Wl,--cref', '-Wl,--check-sections', '-Wl,--gc-sections', '-Wl,--unresolved-symbols=report-all', '-Wl,--warn-common', '-Wl,--warn-section-align', '-T{build_variant_path}/{build_ldscript}', '-Wl,-Map,{build_path}/{build_project_name}.map', '-Wl,--gc-sections', '-Wl,--wrap,_malloc_r', '-Wl,--wrap,_free_r', '-Wl,--wrap,_realloc_r', '-Wl,--wrap,_calloc_r', '-Wl,--start-group', '{build_path}/{archive_file}', '-Wl,--end-group', '-gcc', '--specs=nano.specs', '--specs=nosys.specs', '-u', '_printf_float'],
+    LIBSOURCE_DIRS=[join(FRAMEWORK_DIR, "libraries")]
 )
 
-env.Prepend(LIBS=["devkit-sdk-core-lib", "wlan", "stsafe"])
-if not board.get("build.ldscript", ""):
-    env.Replace(LDSCRIPT_PATH=board.get("build.arduino.ldscript", ""))
+BOARD_SUBS = dict(
+    build_arch=board.get("build.arch"),
+    build_board=board.get("build.board"),
+    build_core_path=join(FRAMEWORK_DIR, "cores", board.get("core")),
+    build_mcu=board.get("build.cpu"),
+    build_path=FRAMEWORK_DIR,
+    build_project_name="pio-project",
+    build_system_path=join(FRAMEWORK_DIR, "system"),
+    build_variant_path=join(FRAMEWORK_DIR, "variants",
+                            board.get("build.variant")),
+    build_ldscript=board.get(
+        "build.ldscript", board.get("build.arduino.ldscript")),
+    runtime_ide_version=10813
+)
 
-#
-# Target: Build Core Library
-#
+def expand(def_str: AnyStr, def_index: Dict[AnyStr, AnyStr]) -> AnyStr:
+    class fmt_dict(dict):
+        def __missing__(self, key):
+            return f"{key}"
 
-libs = []
+    substitutions = fmt_dict(def_index)
+    before_expansion = def_str
+    after_expansion = def_str.format_map(substitutions)
+    while before_expansion != after_expansion:
+        before_expansion = after_expansion
+        after_expansion = after_expansion.format_map(substitutions)
 
-if "build.variant" in env.BoardConfig():
-    env.Append(CPPPATH=[
-        join(FRAMEWORK_DIR, "variants", env.BoardConfig().get("build.variant"))
-    ])
+    return after_expansion
 
-    libs.append(
-        env.BuildLibrary(
-            join("$BUILD_DIR", "FrameworkArduinoVariant"),
-            join(FRAMEWORK_DIR, "variants",
-                 env.BoardConfig().get("build.variant"))))
+def expand_dict(d: Dict[AnyStr, Any], subs: Dict[AnyStr, AnyStr]) -> Dict[AnyStr, Any]:
+    result = dict()
+    for key, val in d.items():
+        key = expand(key, subs)
 
-libs.append(
-    env.BuildLibrary(
-        join("$BUILD_DIR", "FrameworkArduino"),
-        join(FRAMEWORK_DIR, "cores", env.BoardConfig().get("build.core"))))
+        if isinstance(val, str):
+            result[key] = expand(val, subs)
+        elif isinstance(val, tuple):
+            result[key] = tuple(expand(token, subs) for token in val)
+        elif isinstance(val, list):
+            result[key] = [expand(token, subs) for token in val]
+    return result
 
-env.Prepend(LIBS=libs)
+
+COMPILE_OPTS = expand_dict(COMPILE_OPTS, BOARD_SUBS)
+
+
+env.Append(
+    ASFLAGS=COMPILE_OPTS["ASFLAGS"],
+    CFLAGS=COMPILE_OPTS["CFLAGS"],
+    CCFLAGS=COMPILE_OPTS["CCFLAGS"],
+    CXXFLAGS=COMPILE_OPTS["CXXFLAGS"],
+    CPPDEFINES=COMPILE_OPTS["CPPDEFINES"],
+    LIBPATH=COMPILE_OPTS["LIBPATH"],
+    LIBS=COMPILE_OPTS["LIBS"],
+    LINKFLAGS=COMPILE_OPTS["LINKFLAGS"],
+    LIBSOURCE_DIRS=COMPILE_OPTS["LIBSOURCE_DIRS"]
+)
+
+env.Replace(LDSCRIPT_PATH=BOARD_SUBS['build_ldscript'])
